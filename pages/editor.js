@@ -24,7 +24,10 @@ import {
   LANGUAGE_NAME_HASH,
   DEFAULT_LANGUAGE,
   DEFAULT_THEME,
+  DEFAULT_EXPORT_SIZE,
   COLORS,
+  EXPORT_SIZES,
+  EXPORT_SIZES_HASH,
   DEFAULT_CODE,
   DEFAULT_BG_COLOR,
   DEFAULT_SETTINGS
@@ -72,6 +75,7 @@ class Editor extends React.Component {
     this.save = this.save.bind(this)
     this.upload = this.upload.bind(this)
     this.updateCode = this.updateCode.bind(this)
+    this.updateTitleBar = this.updateTitleBar.bind(this)
     this.updateAspectRatio = this.updateAspectRatio.bind(this)
     this.resetDefaultSettings = this.resetDefaultSettings.bind(this)
   }
@@ -98,14 +102,18 @@ class Editor extends React.Component {
   getCarbonImage() {
     const node = document.getElementById('export-container')
 
+    const exportSize = (EXPORT_SIZES_HASH[this.state.exportSize] || DEFAULT_EXPORT_SIZE).value
     const config = {
       style: {
-        transform: 'scale(2)',
-        'transform-origin': 'center'
+        transform: `scale(${exportSize})`,
+        'transform-origin': 'center',
+        background: this.state.squaredImage ? this.state.backgroundColor : 'none'
       },
       filter: n => (n.className ? String(n.className).indexOf('eliminateOnRender') < 0 : true),
-      width: node.offsetWidth * 2,
-      height: node.offsetHeight * 2
+      width: node.offsetWidth * exportSize,
+      height: this.state.squaredImage
+        ? node.offsetWidth * exportSize
+        : node.offsetHeight * exportSize
     }
 
     return domtoimage.toPng(node, config)
@@ -117,6 +125,10 @@ class Editor extends React.Component {
 
   updateAspectRatio(aspectRatio) {
     this.setState({ aspectRatio })
+  }
+
+  updateTitleBar(titleBar) {
+    this.setState({ titleBar })
   }
 
   save() {
@@ -215,6 +227,7 @@ class Editor extends React.Component {
                   config={this.state}
                   updateCode={code => this.updateCode(code)}
                   onAspectRatioChange={this.updateAspectRatio}
+                  updateTitleBar={this.updateTitleBar}
                 >
                   {this.state.code || DEFAULT_CODE}
                 </Carbon>
